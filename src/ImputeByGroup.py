@@ -12,29 +12,46 @@ class ImputeByGroups:
     target_col: str  # the ONE column to be imputed 
     groupby_col: Iterable[str] = None  # the columns on which to pd.DataFrame.groupby, if any
     imputation_values: Any = None  # dict(-like) obj mapping from grouped by
-    # return_df: bool = True  # whether to return a DataFrame or just the imputed array
+    return_df: bool = False  # return the whole DataFrame, or just the imputed column?
     copy: bool = True  # return a copy, or modify in-place? Only relevant when return_df == True
     
     def __post_init__(self):
         assert isinstance(self.target_col, str)
         self.groupby_col = [self.groupby_col] if isinstance(self.groupby_col, str) else self.groupby_col
     
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> Union[pd.Series, pd.DataFrame]:
         """ Same .transform() applies for numerical and categorical data """
         assert isinstance(X, pd.DataFrame)
         assert self.imputation_values, "Imputer is not fitted yet"
-        imputed_df = X.copy() if self.copy else X
 
-        na_mask = imputed_df[self.target_col].isna()
+        # Only consider self.copy if returning a dataframe
+        # If returning just the imputed column, we will copy anyway
+        if self.copy and self.return_df:
+            imputed_result = X.copy()
+        elif self.return_df:
+            imputed_result = X
+        else:
+            imputed_result = X.loc[:, self.target_col].copy()
+
+        na_mask = X[self.target_col].isna()
         if self.groupby_col:
-            imputed_df.loc[na_mask, self.target_col] = imputed_df.loc[na_mask].apply(
+            # Note that imputed_target_col is NOT the whole column
+            # It contains only the rows that had missing values, but are now imputed
+            imputed_target_col = X.loc[na_mask].apply(
                 lambda row: self.imputation_values[ tuple(row.loc[self.groupby_col]) ],
                 axis=1
             )
         else:
-            imputed_df.loc[:, self.target_col].fillna(self.imputation_values, inplace=True)
-    
-        return imputed_df
+            imputed_target_col = X.loc[na_mask, self.target_col].fillna(self.imputation_values)
+
+        if self.return_df:
+            # imputed_result is DataFrame
+            imputed_result.loc[na_mask, self.target_col] = imputed_target_col
+        else:
+            # imputed_result is Series
+            imputed_result.loc[na_mask] = imputed_target_col.values
+        
+        return imputed_result
 
 
 class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
