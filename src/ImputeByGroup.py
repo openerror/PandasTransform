@@ -36,6 +36,7 @@ class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
     
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         assert isinstance(X, pd.DataFrame)
+        assert self.imputation_values, "Imputer is not fitted yet"
         imputed_df = X.copy() if self.copy else X
 
         na_mask = imputed_df[self.target_col].isna()
