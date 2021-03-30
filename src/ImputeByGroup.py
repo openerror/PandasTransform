@@ -18,6 +18,23 @@ class ImputeByGroups:
     def __post_init__(self):
         assert isinstance(self.target_col, str)
         self.groupby_col = [self.groupby_col] if isinstance(self.groupby_col, str) else self.groupby_col
+    
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """ Same .transform() applies for numerical and categorical data """
+        assert isinstance(X, pd.DataFrame)
+        assert self.imputation_values, "Imputer is not fitted yet"
+        imputed_df = X.copy() if self.copy else X
+
+        na_mask = imputed_df[self.target_col].isna()
+        if self.groupby_col:
+            imputed_df.loc[na_mask, self.target_col] = imputed_df.loc[na_mask].apply(
+                lambda row: self.imputation_values[ tuple(row.loc[self.groupby_col]) ],
+                axis=1
+            )
+        else:
+            imputed_df.loc[:, self.target_col].fillna(self.imputation_values, inplace=True)
+    
+        return imputed_df
 
 
 class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
@@ -34,20 +51,6 @@ class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
             self.imputation_values = X[self.target_col].median()
         return self
     
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        assert isinstance(X, pd.DataFrame)
-        assert self.imputation_values, "Imputer is not fitted yet"
-        imputed_df = X.copy() if self.copy else X
 
-        na_mask = imputed_df[self.target_col].isna()
-        if self.groupby_col:
-            imputed_df.loc[na_mask, self.target_col] = imputed_df.loc[na_mask].apply(
-                lambda row: self.imputation_values[ tuple(row.loc[self.groupby_col]) ],
-                axis=1
-            )
-        else:
-            imputed_df.loc[:, self.target_col].fillna(self.imputation_values, inplace=True)
-    
-        return imputed_df
         
 
