@@ -22,8 +22,8 @@ class ImputeByGroups:
 
 class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
     """ Impute ONE continuous numerical column, optionally after grouping by other (discrete) columns """
-    def __init__(self, target_col, groupby_col=None, **kwargs):
-        super().__init__(target_col=target_col, groupby_col=groupby_col, **kwargs)
+    def __init__(self, target_col, **kwargs):
+        super().__init__(target_col=target_col, **kwargs)
 
     def fit(self, X: pd.DataFrame, y=None):
         """ Implement the imputation logic here """
