@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 @dataclass
-class ImputeByGroups:
+class ImputeByGroup:
     """ Collect common attributes used by group-by-imputers """
     target_col: str  # the ONE column to be imputed 
     groupby_col: Iterable[str] = None  # the columns on which to pd.DataFrame.groupby, if any
@@ -54,7 +54,7 @@ class ImputeByGroups:
         return imputed_result
 
 
-class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
+class ImputeNumericalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
     """ Impute ONE continuous numerical column, optionally after grouping by other (discrete) columns """
     def __init__(self, target_col, **kwargs):
         super().__init__(target_col=target_col, **kwargs)

@@ -7,7 +7,7 @@ Run tests from parent directory, which
 import numpy as np
 import pandas as pd
 import pytest
-from src.ImputeByGroup import ImputeNumericalByGroups
+from src.ImputeByGroup import ImputeNumericalByGroup
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def test_numerical_df_wide(titanic_data):
     titanic_train, _ = titanic_data
     na_mask = titanic_train["Age"].isna()
 
-    imputer = ImputeNumericalByGroups(target_col="Age", copy=True, return_df=True).fit(
+    imputer = ImputeNumericalByGroup(target_col="Age", copy=True, return_df=True).fit(
         titanic_train
     )
     df = imputer.transform(titanic_train)
@@ -36,7 +36,7 @@ def test_numerical_gb1(titanic_data):
     titanic_train, _ = titanic_data
     na_mask = titanic_train["Age"].isna()
 
-    imputer = ImputeNumericalByGroups(
+    imputer = ImputeNumericalByGroup(
         target_col="Age", groupby_col=["Pclass"], copy=True, return_df=True
     ).fit(titanic_train)
     df = imputer.transform(titanic_train)
@@ -55,7 +55,7 @@ def test_numerical_gb2(titanic_data):
     titanic_train, _ = titanic_data
     na_mask = titanic_train["Age"].isna()
 
-    imputer = ImputeNumericalByGroups(
+    imputer = ImputeNumericalByGroup(
         target_col="Age", groupby_col=["Pclass", "Embarked"], copy=True, return_df=True
     ).fit(titanic_train)
     df = imputer.transform(titanic_train)
