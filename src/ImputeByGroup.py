@@ -63,7 +63,11 @@ class ImputeNumericalByGroups(ImputeByGroups, BaseEstimator, TransformerMixin):
         """ Implement the imputation logic here """
         assert isinstance(X, pd.DataFrame)
         if self.groupby_col:
-            self.imputation_values = X.groupby(self.groupby_col)[self.target_col].median().to_dict()
+            self.imputation_values = X.groupby(self.groupby_col)[self.target_col].median()
+            self.imputation_values = {
+                key if isinstance(key, tuple) else (key,): val 
+                for key, val in self.imputation_values.iteritems()
+            }
         else:
             self.imputation_values = X[self.target_col].median()
         return self
