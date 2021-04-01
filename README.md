@@ -3,7 +3,7 @@
 ## Quick --- What is Here?
 1. Code for processing `pandas.DataFrame` that is compatible with `sklearn.pipeline`
 2. High code coverage by unit tests (via [pytest](https://docs.pytest.org/en/stable/#))
-3. (TODO) Continuous integration as I add more functionality
+3. Continuous integration via [GitHub Actions](https://docs.github.com/en/actions) as I add more functionality
 
 ## Motivation
 In addition to providing common machine learning algorithms, scikit-learn allows users to build
