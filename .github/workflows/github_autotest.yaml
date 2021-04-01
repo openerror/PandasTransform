@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: docker://python/3.8.8-slim-buster
+      image: docker://python
     
     steps:
     - uses: actions/checkout@v2
