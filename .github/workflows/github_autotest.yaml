@@ -11,18 +11,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: docker://manifoldai/orbyter-ml-dev:2.0
+      image: docker://python/3.8.8-slim-buster
     
     steps:
     - uses: actions/checkout@v2
-    # - name: Set up Python 3.8
-    #   uses: actions/setup-python@v1 
-    #   with:
-    #     python-version: 3.8
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest
+        python -m pip install pytest==6.2.2
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
