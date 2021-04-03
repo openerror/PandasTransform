@@ -8,7 +8,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 @dataclass
 class ImputeByGroup:
-    """ Collect common attributes used by group-by-imputers """
+    """ 
+        Collect common attributes used by group-by-imputers 
+        TODO:
+            - Encountering new, unrecorded group in test data
+    """
     target_col: str  # the ONE column to be imputed 
     groupby_col: Iterable[str] = None  # the columns on which to pd.DataFrame.groupby, if any
     imputation_values: Any = None  # dict(-like) obj mapping from grouped by
@@ -73,5 +77,29 @@ class ImputeNumericalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
         return self
     
 
-        
+class ImputeCategoricalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
+    """ 
+        Impute ONE discrete categorical column, optionally after grouping by other (discrete) columns 
 
+        TODO:
+            - Handling multiple modes in each group
+
+        Potential TODO: Faster implementation 
+        https://stackoverflow.com/questions/15222754/groupby-pandas-dataframe-and-select-most-common-value
+    """
+
+    def __init__(self, target_col, **kwargs):
+        super().__init__(target_col=target_col, **kwargs)
+
+    def fit(self, X: pd.DataFrame, y=None):
+        """ Implement the imputation logic here """
+        assert isinstance(X, pd.DataFrame)
+        if self.groupby_col:
+            self.imputation_values = X.groupby(self.groupby_col)[self.target_col].agg(pd.Series.mode)
+            self.imputation_values = {
+                key if isinstance(key, tuple) else (key,): val 
+                for key, val in self.imputation_values.iteritems()
+            }
+        else:
+            self.imputation_values = X[self.target_col].mode().iloc[0]
+        return self
