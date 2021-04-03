@@ -18,6 +18,7 @@ Unfortunately, [scikit-learn works directly with numpy arrays or scipy sparse ar
 All files are located within directory `src`.
 - `ImputeByGroup.py`
     - `ImputeNumericalByGroup`; [`groupby`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.groupby.html), calculate per-group statistics (e.g. median) of a **numerical** column with missing values, and then impute each group using said statistics.
+    - `ImputeCategoricalByGroup`; like the above, but for imputing discrete, categorical columns. Fills up missing values using the most frequent unique value.
 
 ## Usage
 Copy the source file(s) of interest from the `src` directory into your own project, and then import as necessary. Please see `playground.ipynb` for a usage demonstration.
