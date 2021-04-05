@@ -81,8 +81,8 @@ class ImputeCategoricalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
     """ 
         Impute ONE discrete categorical column, optionally after grouping by other (discrete) columns 
 
-        TODO:
-            - Handling multiple modes in each group
+        If multiple modes encountered in value_counts()
+        select the min value like sklearn.preprocessing.SimpleImputer would 
 
         Potential TODO: Faster implementation 
         https://stackoverflow.com/questions/15222754/groupby-pandas-dataframe-and-select-most-common-value
@@ -95,11 +95,18 @@ class ImputeCategoricalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
         """ Implement the imputation logic here """
         assert isinstance(X, pd.DataFrame)
         if self.groupby_col:
-            self.imputation_values = X.groupby(self.groupby_col)[self.target_col].agg(pd.Series.mode)
+            self.imputation_values = (
+                X.groupby(self.groupby_col)[self.target_col]
+                .value_counts()
+                .unstack(level=list(range(len(self.groupby_col))))
+                .idxmax()
+            )
+            # May encounter pandas bugs with the line below            
+            # self.imputation_values = X.groupby(self.groupby_col)[self.target_col].agg(pd.Series.mode)
             self.imputation_values = {
                 key if isinstance(key, tuple) else (key,): val 
                 for key, val in self.imputation_values.iteritems()
             }
         else:
-            self.imputation_values = X[self.target_col].mode().iloc[0]
+            self.imputation_values = X[self.target_col].mode().min()
         return self
