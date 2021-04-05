@@ -1,3 +1,4 @@
+from collections import defaultdict 
 from dataclasses import dataclass
 from typing import *
 
@@ -14,15 +15,29 @@ class ImputeByGroup:
             - Encountering new, unrecorded group in test data
     """
     target_col: str  # the ONE column to be imputed 
+    copy: bool = True  # return a copy, or modify in-place? Only relevant when return_df == True
     groupby_col: Iterable[str] = None  # the columns on which to pd.DataFrame.groupby, if any
+    key_error_on_unseen: bool = True  # throw KeyError at unseen groupby_col values in .transform?
     imputation_values: Any = None  # dict(-like) obj mapping from grouped by
     return_df: bool = False  # return the whole DataFrame, or just the imputed column?
-    copy: bool = True  # return a copy, or modify in-place? Only relevant when return_df == True
     
     def __post_init__(self):
         assert isinstance(self.target_col, str)
         self.groupby_col = [self.groupby_col] if isinstance(self.groupby_col, str) else self.groupby_col
     
+    def _prepare_imputation_values(self, standin: Any):
+        """ 
+            Refactored common steps from subclasses
+            standin_value: if self.imputation_values dict does not contain inquired group, dict
+                should return this value
+        """
+        self.imputation_values = {
+            key if isinstance(key, tuple) else (key,): val 
+            for key, val in self.imputation_values.iteritems()
+        }
+        if not self.key_error_on_unseen:
+            self.imputation_values = defaultdict(lambda: standin, self.imputation_values) 
+
     def transform(self, X: pd.DataFrame) -> Union[pd.Series, pd.DataFrame]:
         """ Same .transform() applies for numerical and categorical data """
         assert isinstance(X, pd.DataFrame)
@@ -68,10 +83,7 @@ class ImputeNumericalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
         assert isinstance(X, pd.DataFrame)
         if self.groupby_col:
             self.imputation_values = X.groupby(self.groupby_col)[self.target_col].median()
-            self.imputation_values = {
-                key if isinstance(key, tuple) else (key,): val 
-                for key, val in self.imputation_values.iteritems()
-            }
+            self._prepare_imputation_values(standin=X[self.target_col].median())
         else:
             self.imputation_values = X[self.target_col].median()
         return self
@@ -102,11 +114,7 @@ class ImputeCategoricalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
                 .idxmax()
             )
             # May encounter pandas bugs with the line below            
-            # self.imputation_values = X.groupby(self.groupby_col)[self.target_col].agg(pd.Series.mode)
-            self.imputation_values = {
-                key if isinstance(key, tuple) else (key,): val 
-                for key, val in self.imputation_values.iteritems()
-            }
+            self._prepare_imputation_values(standin=X[self.target_col].mode().min())
         else:
             self.imputation_values = X[self.target_col].mode().min()
         return self
