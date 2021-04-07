@@ -113,7 +113,6 @@ class ImputeCategoricalByGroup(ImputeByGroup, BaseEstimator, TransformerMixin):
                 .unstack(level=list(range(len(self.groupby_col))))
                 .idxmax()
             )
-            # May encounter pandas bugs with the line below            
             self._prepare_imputation_values(standin=X[self.target_col].mode().min())
         else:
             self.imputation_values = X[self.target_col].mode().min()
