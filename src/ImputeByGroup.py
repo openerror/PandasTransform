@@ -11,8 +11,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class ImputeByGroup:
     """ 
         Collect common attributes used by group-by-imputers 
-        TODO:
-            - Encountering new, unrecorded group in test data
     """
     target_col: str  # the ONE column to be imputed 
     copy: bool = True  # return a copy, or modify in-place? Only relevant when return_df == True

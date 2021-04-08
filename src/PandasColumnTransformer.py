@@ -26,10 +26,10 @@ class PandasColumnTransformer(BaseEstimator, TransformerMixin):
         """Get names of transformed columns from a fitted self.col_transformer
 
         Args:
-            X (pd.DataFrame): [description]
+            X (pd.DataFrame): DataFrame to be fitted on
 
         Yields:
-            Iterator[Iterable[str]]: [description]
+            Iterator[Iterable[str]]: column names corresponding to each transformer
         """
         for name, transformer, cols in self.col_transformer.transformers_:
             if hasattr(transformer, "get_feature_names"):
@@ -44,11 +44,11 @@ class PandasColumnTransformer(BaseEstimator, TransformerMixin):
                 yield cols
 
     def fit(self, X: pd.DataFrame, y: Any=None):
-        """[summary]
+        """Fit ColumnTransformer, and obtain names of transformed columns in advance
 
         Args:
             X (pd.DataFrame): DataFrame to be fitted on
-            y (Any, optional): . Defaults to None.
+            y (Any, optional): Purely for compliance with transformer API. Defaults to None.
         """
         assert isinstance(X, pd.DataFrame)
         self.col_transformer = self.col_transformer.fit(X)
