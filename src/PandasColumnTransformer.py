@@ -68,8 +68,10 @@ class PandasColumnTransformer(BaseEstimator, TransformerMixin):
         assert isinstance(X, pd.DataFrame)
         transformed_X = self.col_transformer.transform(X)
         if isinstance(transformed_X, np.ndarray):
-            return pd.DataFrame(transformed_X, columns=self.transformed_col_names)
+            return pd.DataFrame(transformed_X, index=X.index, 
+            columns=self.transformed_col_names)
         else:
             return pd.DataFrame.sparse.from_spmatrix(
-                transformed_X, columns=self.transformed_col_names
+                transformed_X, index=X.index,
+                columns=self.transformed_col_names
             )
